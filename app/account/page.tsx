@@ -17,30 +17,29 @@ export default function AccountPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    async function loadUser() {
-      // 1. First check active session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        setReady(true);
-        return;
-      }
+    let isMounted = true;
 
-      // 2. Fallback: check auth user directly
-      const { data: { user: fetchedUser } } = await supabase.auth.getUser();
-      setUser(fetchedUser ?? null);
-      setReady(true);
+    async function checkAuth() {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (isMounted) {
+        setUser(currentUser ?? null);
+        setReady(true);
+      }
     }
 
-    loadUser();
+    checkAuth();
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setReady(true);
+      if (isMounted) {
+        setUser(session?.user ?? null);
+        setReady(true);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {

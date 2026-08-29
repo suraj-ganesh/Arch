@@ -66,9 +66,9 @@ function LoginContent() {
 
     const role = data.user?.user_metadata?.role;
     if (role === 'admin' || email === 'admin@arch.com') {
-      router.push('/admin');
+      window.location.assign('/admin');
     } else {
-      router.push(redirect);
+      window.location.assign(redirect);
     }
   };
 
