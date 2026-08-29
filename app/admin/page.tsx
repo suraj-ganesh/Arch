@@ -18,11 +18,13 @@ export default function AdminDashboardPage() {
   const { showToast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setAdminUser(session.user);
+    async function checkAdminSession() {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setAdminUser(data.session.user);
       }
-    });
+    }
+    checkAdminSession();
 
     async function loadAdminData() {
       try {

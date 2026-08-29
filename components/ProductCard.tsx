@@ -22,7 +22,9 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function checkCardSession() {
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
       if (session?.user) {
         const role = session.user.user_metadata?.role;
         // Only regular (non-admin) logged-in users can purchase
@@ -32,7 +34,8 @@ export default function ProductCard({ product }: ProductCardProps) {
         setCanPurchase(false);
       }
       setPurchaseChecked(true);
-    });
+    }
+    checkCardSession();
   }, []);
 
   const defaultSize = product.sizes[0] || 40;

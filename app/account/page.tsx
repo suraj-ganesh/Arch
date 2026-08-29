@@ -20,15 +20,18 @@ export default function AccountPage() {
     let isMounted = true;
 
     // 1. Fetch initial session explicitly
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function initSession() {
+      const { data } = await supabase.auth.getSession();
       if (isMounted) {
-        setUser(session?.user ?? null);
+        setUser(data.session?.user ?? null);
         setReady(true);
       }
-    });
+    }
+
+    initSession();
 
     // 2. Listen for auth state changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
       if (!isMounted) return;
 
       if (session?.user) {

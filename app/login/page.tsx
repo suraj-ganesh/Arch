@@ -31,7 +31,9 @@ function LoginContent() {
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function checkLoginSession() {
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
       if (session?.user) {
         const role = session.user.user_metadata?.role;
         if (role === 'admin') {
@@ -42,7 +44,8 @@ function LoginContent() {
       } else {
         setSessionChecked(true);
       }
-    });
+    }
+    checkLoginSession();
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {

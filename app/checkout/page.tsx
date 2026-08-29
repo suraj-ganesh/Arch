@@ -29,7 +29,9 @@ export default function CheckoutPage() {
   useEffect(() => {
     setMounted(true);
     // Check active Supabase Auth session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function checkCheckoutSession() {
+      const { data } = await supabase.auth.getSession();
+      const session = data.session;
       setUserSession(session);
       if (session?.user) {
         setFormData((prev) => ({
@@ -38,7 +40,8 @@ export default function CheckoutPage() {
         }));
       }
       setCheckingAuth(false);
-    });
+    }
+    checkCheckoutSession();
   }, []);
 
   if (!mounted || checkingAuth) return null;
