@@ -66,9 +66,9 @@ function LoginContent() {
 
     const role = data.user?.user_metadata?.role;
     if (role === 'admin' || email === 'admin@arch.com') {
-      window.location.href = '/admin';
+      router.push('/admin');
     } else {
-      window.location.href = redirect;
+      router.push(redirect);
     }
   };
 

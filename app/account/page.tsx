@@ -17,13 +17,24 @@ export default function AccountPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setReady(true);
-    });
+    async function loadUser() {
+      // 1. First check active session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        setReady(true);
+        return;
+      }
 
-    // Listen for auth state changes (login, logout, token refresh)
+      // 2. Fallback: check auth user directly
+      const { data: { user: fetchedUser } } = await supabase.auth.getUser();
+      setUser(fetchedUser ?? null);
+      setReady(true);
+    }
+
+    loadUser();
+
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setReady(true);
