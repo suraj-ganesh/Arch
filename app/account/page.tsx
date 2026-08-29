@@ -17,8 +17,13 @@ export default function AccountPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // onAuthStateChange fires immediately with the current session (INITIAL_SESSION event),
-    // so we don't need getSession() separately; this avoids the race condition.
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setReady(true);
+    });
+
+    // Listen for auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setReady(true);
