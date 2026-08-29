@@ -35,9 +35,15 @@ export async function POST(request: NextRequest) {
       response.cookies.set(cookie.name, '', {
         maxAge: 0,
         path: '/',
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
+      });
+      // Also send an HttpOnly delete header to remove any legacy HttpOnly cookie
+      response.cookies.set(`${cookie.name}-clear-legacy`, '', {
+        maxAge: 0,
+        path: '/',
+        httpOnly: true,
       });
     }
   });

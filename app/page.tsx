@@ -3,17 +3,39 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ProductGrid from '../components/ProductGrid';
-import { MOCK_PRODUCTS } from '../lib/mockData';
-import { ArrowRight, Star, CheckCircle2, Footprints, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Product } from '../lib/types';
+import { Footprints, ChevronLeft, ChevronRight, Star, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function HomePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState('All');
   const [currentShoeIndex, setCurrentShoeIndex] = useState(0);
 
-  const heroShoes = MOCK_PRODUCTS;
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/products?sort=newest');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch homepage products:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProducts();
+  }, []);
+
+  const heroShoes = products;
 
   // Auto-slide hero section every 4.5 seconds
   useEffect(() => {
+    if (heroShoes.length === 0) return;
     const timer = setInterval(() => {
       setCurrentShoeIndex((prev) => (prev + 1) % heroShoes.length);
     }, 4500);
@@ -21,18 +43,23 @@ export default function HomePage() {
   }, [heroShoes.length]);
 
   const nextShoe = () => {
+    if (heroShoes.length === 0) return;
     setCurrentShoeIndex((prev) => (prev + 1) % heroShoes.length);
   };
 
   const prevShoe = () => {
+    if (heroShoes.length === 0) return;
     setCurrentShoeIndex((prev) => (prev - 1 + heroShoes.length) % heroShoes.length);
   };
 
-  const activeHeroShoe = heroShoes[currentShoeIndex];
+  const activeHeroShoe = heroShoes[currentShoeIndex] || heroShoes[0];
 
-  const filteredTrending = selectedBrand === 'All'
-    ? MOCK_PRODUCTS.slice(0, 4)
-    : MOCK_PRODUCTS.filter((p) => p.brand.toLowerCase() === selectedBrand.toLowerCase());
+  const availableBrands = ['All', ...Array.from(new Set(products.map((p) => p.brand))).filter(Boolean)];
+
+  const filteredTrending = (selectedBrand === 'All'
+    ? products
+    : products.filter((p) => p.brand.toLowerCase() === selectedBrand.toLowerCase())
+  ).slice(0, 4);
 
   return (
     <div className="space-y-16 pb-20 pt-4 font-sans">
@@ -76,59 +103,67 @@ export default function HomePage() {
             
             {/* Background Arch Frame with Carousel Transition */}
             <div className="relative w-full aspect-[4/3] rounded-t-full rounded-b-3xl overflow-hidden bg-gradient-to-tr from-[#463f3a] via-[#8a817c] to-[#839788] border border-[#bcb8b1]/40 shadow-xl group">
-              <img
-                key={activeHeroShoe.id}
-                src={activeHeroShoe.image_urls[0]}
-                alt={activeHeroShoe.name}
-                className="w-full h-full object-cover opacity-90 transition-all duration-700 ease-in-out scale-100 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#463f3a]/80 via-transparent to-transparent" />
-              
-              {/* Product Badge & Info Overlay */}
-              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white">
-                <div>
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[#839788] bg-white px-2.5 py-0.5 rounded-full">
-                    {activeHeroShoe.brand} • Featured
-                  </span>
-                  <h3 className="text-base sm:text-lg font-normal text-white mt-1 line-clamp-1">{activeHeroShoe.name}</h3>
-                </div>
-                <Link
-                  href={`/products/${activeHeroShoe.id}`}
-                  className="text-xs font-normal text-white bg-[#839788] hover:bg-[#463f3a] px-3.5 py-1.5 rounded-full transition-colors"
-                >
-                  Rs. {activeHeroShoe.price.toLocaleString()}
-                </Link>
-              </div>
-
-              {/* User Manual Controls */}
-              <button
-                onClick={prevShoe}
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 backdrop-blur-md text-[#463f3a] flex items-center justify-center hover:bg-white transition-all shadow-sm"
-                title="Previous Shoe"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={nextShoe}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 backdrop-blur-md text-[#463f3a] flex items-center justify-center hover:bg-white transition-all shadow-sm"
-                title="Next Shoe"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-
-              {/* Carousel Indicators */}
-              <div className="absolute top-4 right-4 flex gap-1.5 bg-black/20 backdrop-blur-md px-2 py-1 rounded-full">
-                {heroShoes.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentShoeIndex(idx)}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${
-                      currentShoeIndex === idx ? 'bg-white w-4' : 'bg-white/40'
-                    }`}
+              {activeHeroShoe ? (
+                <>
+                  <img
+                    key={activeHeroShoe.id}
+                    src={activeHeroShoe.image_urls?.[0]}
+                    alt={activeHeroShoe.name}
+                    className="w-full h-full object-cover opacity-90 transition-all duration-700 ease-in-out scale-100 group-hover:scale-105"
                   />
-                ))}
-              </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#463f3a]/80 via-transparent to-transparent" />
+                  
+                  {/* Product Badge & Info Overlay */}
+                  <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white">
+                    <div>
+                      <span className="text-[10px] font-medium uppercase tracking-widest text-[#839788] bg-white px-2.5 py-0.5 rounded-full">
+                        {activeHeroShoe.brand} • Featured
+                      </span>
+                      <h3 className="text-base sm:text-lg font-normal text-white mt-1 line-clamp-1">{activeHeroShoe.name}</h3>
+                    </div>
+                    <Link
+                      href={`/products/${activeHeroShoe.id}`}
+                      className="text-xs font-normal text-white bg-[#839788] hover:bg-[#463f3a] px-3.5 py-1.5 rounded-full transition-colors"
+                    >
+                      Rs. {activeHeroShoe.price.toLocaleString()}
+                    </Link>
+                  </div>
+
+                  {/* User Manual Controls */}
+                  <button
+                    onClick={prevShoe}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 backdrop-blur-md text-[#463f3a] flex items-center justify-center hover:bg-white transition-all shadow-sm"
+                    title="Previous Shoe"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    onClick={nextShoe}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 backdrop-blur-md text-[#463f3a] flex items-center justify-center hover:bg-white transition-all shadow-sm"
+                    title="Next Shoe"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  {/* Carousel Indicators */}
+                  <div className="absolute top-4 right-4 flex gap-1.5 bg-black/20 backdrop-blur-md px-2 py-1 rounded-full">
+                    {heroShoes.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentShoeIndex(idx)}
+                        className={`w-1.5 h-1.5 rounded-full transition-all ${
+                          currentShoeIndex === idx ? 'bg-white w-4' : 'bg-white/40'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[#f4f3ee] text-xs">
+                  Loading hero catalog...
+                </div>
+              )}
 
             </div>
 
@@ -164,7 +199,7 @@ export default function HomePage() {
 
           <div className="bg-white border border-[#bcb8b1]/40 rounded-3xl p-5 flex items-center justify-between shadow-xs">
             <div>
-              <span className="text-2xl font-light text-[#463f3a]">50+</span>
+              <span className="text-2xl font-light text-[#463f3a]">{products.length}+</span>
               <p className="text-xs font-normal text-[#8a817c] mt-0.5">Curated Shoe Models</p>
             </div>
             <div className="w-8 h-8 rounded-full bg-[#839788]/20 text-[#839788] flex items-center justify-center">
@@ -195,7 +230,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {['All', 'Nike', 'Adidas', 'New Balance', 'Puma'].map((b) => (
+            {availableBrands.map((b) => (
               <button
                 key={b}
                 onClick={() => setSelectedBrand(b)}
@@ -211,7 +246,18 @@ export default function HomePage() {
           </div>
         </div>
 
-        <ProductGrid products={filteredTrending} />
+        <ProductGrid products={filteredTrending} isLoading={loading} />
+
+        {/* See More Products CTA Button */}
+        <div className="pt-4 text-center">
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white border border-[#bcb8b1]/60 text-[#463f3a] font-medium text-xs uppercase tracking-wider hover:bg-[#839788] hover:text-white hover:border-[#839788] transition-all shadow-xs group"
+          >
+            <span>See More Products</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
       </section>
 
     </div>

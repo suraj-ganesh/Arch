@@ -63,7 +63,7 @@ export default function Navbar() {
             href="/products"
             className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white border border-[#bcb8b1]/60 text-xs font-semibold text-[#463f3a] hover:border-[#463f3a] shadow-xs transition-all font-sans"
           >
-            <span>Catalog</span>
+            <span>Products</span>
           </Link>
 
           <Link

@@ -35,9 +35,9 @@ function LoginContent() {
       if (session?.user) {
         const role = session.user.user_metadata?.role;
         if (role === 'admin') {
-          window.location.replace('/admin');
+          router.push('/admin');
         } else {
-          window.location.replace(redirect);
+          router.push(redirect);
         }
       } else {
         setSessionChecked(true);
@@ -66,9 +66,11 @@ function LoginContent() {
 
     const role = data.user?.user_metadata?.role;
     if (role === 'admin' || email === 'admin@arch.com') {
-      window.location.assign('/admin');
+      router.push('/admin');
+      router.refresh();
     } else {
-      window.location.assign(redirect);
+      router.push(redirect);
+      router.refresh();
     }
   };
 

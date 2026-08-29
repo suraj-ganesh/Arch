@@ -19,19 +19,23 @@ export default function AccountPage() {
   useEffect(() => {
     let isMounted = true;
 
-    async function checkAuth() {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (isMounted) {
-        setUser(currentUser ?? null);
-        setReady(true);
-      }
-    }
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // 1. Fetch initial session explicitly
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (isMounted) {
         setUser(session?.user ?? null);
+        setReady(true);
+      }
+    });
+
+    // 2. Listen for auth state changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+
+      if (session?.user) {
+        setUser(session.user);
+        setReady(true);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
         setReady(true);
       }
     });
