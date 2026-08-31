@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import { createClient } from '../../lib/supabase/client';
 import { useToast } from '../../components/ToastProvider';
 import { Package, Mail, Phone, MapPin, LogOut, LogIn, UserPlus } from 'lucide-react';
@@ -12,7 +13,7 @@ export default function AccountPage() {
   const supabase = createClient();
   const { showToast } = useToast();
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   // Start in loading state — wait for onAuthStateChange to fire before rendering
   const [ready, setReady] = useState(false);
 
@@ -31,7 +32,7 @@ export default function AccountPage() {
     initSession();
 
     // 2. Listen for auth state changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (!isMounted) return;
 
       if (session?.user) {

@@ -8,13 +8,14 @@ import { Product } from '../../lib/types';
 import { Plus, Edit, Trash2, Search, LogOut, Shield, UserCheck, Mail, ShieldAlert } from 'lucide-react';
 import { useToast } from '../../components/ToastProvider';
 import { createClient } from '../../lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const supabase = createClient();
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [search, setSearch] = useState('');
-  const [adminUser, setAdminUser] = useState<any>(null);
+  const [adminUser, setAdminUser] = useState<User | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {

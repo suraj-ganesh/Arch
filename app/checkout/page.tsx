@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '../../lib/store/useCartStore';
 import { useToast } from '../../components/ToastProvider';
 import { createClient } from '../../lib/supabase/client';
+import type { Session } from '@supabase/supabase-js';
 import { ESEWA_CONFIG } from '../../lib/esewa';
 import { ShieldCheck, Lock, LogIn } from 'lucide-react';
 
@@ -14,7 +15,7 @@ export default function CheckoutPage() {
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [userSession, setUserSession] = useState<any>(null);
+  const [userSession, setUserSession] = useState<Session | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   const { items, getTotalPrice } = useCartStore();
