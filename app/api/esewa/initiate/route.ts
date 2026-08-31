@@ -73,15 +73,28 @@ export async function POST(request: Request) {
     }
     // ────────────────────────────────────────────────────────────────────────
 
-    const host = request.headers.get('host') || 'localhost:3000';
-    const protocol = host.includes('localhost') ? 'http' : 'https';
-    const baseUrl = `${protocol}://${host}`;
+    // Prefer an explicit public base URL from env (set this in Vercel Env Vars).
+    // Fallback to the request host when not provided (useful for local dev).
+    const explicitBase = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL;
+    let baseUrl = '';
+    if (explicitBase) {
+      // VERCEL_URL may not include protocol, ensure it does.
+      baseUrl = explicitBase.startsWith('http') ? explicitBase : `https://${explicitBase}`;
+    } else {
+      const host = request.headers.get('host') || 'localhost:3000';
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      baseUrl = `${protocol}://${host}`;
+    }
 
     const esewaPayload = prepareEsewaPayload({
       amount: grandTotal,
       orderId,
       baseUrl
     });
+
+    // Log the callback URLs for debugging (visible in Vercel build logs)
+    console.log('eSewa success_url:', esewaPayload.success_url);
+    console.log('eSewa failure_url:', esewaPayload.failure_url);
 
     return NextResponse.json({
       success: true,
