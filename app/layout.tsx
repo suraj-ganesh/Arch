@@ -14,8 +14,13 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "ARCH — Shoe E-Commerce Platform",
+  title: "Arch",
   description: "Next-gen shoe store with eSewa ePay v2 payment integration.",
+  icons: {
+    icon: '/arch-logo.svg',
+    shortcut: '/arch-logo.svg',
+    apple: '/arch-logo.svg'
+  }
 };
 
 export default function RootLayout({
