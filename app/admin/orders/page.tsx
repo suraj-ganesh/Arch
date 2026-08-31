@@ -7,19 +7,23 @@ import Link from 'next/link';
 import { Package, ShieldCheck, CheckCircle2, Truck, XCircle, Clock } from 'lucide-react';
 import { useToast } from '@/components/ToastProvider';
 import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
 
 export default function AdminOrdersPage() {
   const { showToast } = useToast();
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any | null>(null);
 
   const [orders, setOrders] = useState<any[]>([]);
   const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const client = createClient();
+    setSupabase(client);
+
     async function fetchAllOrders() {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await client
           .from('orders')
           .select('*')
           .order('created_at', { ascending: false });
@@ -42,7 +46,8 @@ export default function AdminOrdersPage() {
       prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
     );
     try {
-      await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+      const client = supabase ?? createClient();
+      await client.from('orders').update({ status: newStatus }).eq('id', orderId);
     } catch (e) {}
     showToast(`Updated status of ${orderId} to ${newStatus}`, 'success');
   };

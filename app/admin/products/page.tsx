@@ -8,18 +8,22 @@ import { Product } from '@/lib/types';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { useToast } from '@/components/ToastProvider';
 import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any | null>(null);
 
   useEffect(() => {
+    const client = createClient();
+    setSupabase(client);
+
     async function loadProducts() {
       try {
-        const { data } = await supabase.from('products').select('*');
+        const { data } = await client.from('products').select('*');
         if (data) {
           setProducts(data);
         }
@@ -36,7 +40,8 @@ export default function AdminProductsPage() {
     if (confirm(`Are you sure you want to delete "${name}"?`)) {
       setProducts((prev) => prev.filter((p) => p.id !== id));
       try {
-        await supabase.from('products').delete().eq('id', id);
+        const client = supabase ?? createClient();
+        await client.from('products').delete().eq('id', id);
       } catch (e) {}
       showToast(`Deleted ${name}`, 'info');
     }

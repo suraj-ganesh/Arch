@@ -5,19 +5,23 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '../../../lib/supabase/client';
+import { useState } from 'react';
 import { Package, Clock, CheckCircle2, Truck } from 'lucide-react';
 
 export default function AccountOrdersPage() {
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const client = createClient();
+    setSupabase(client);
+
     async function fetchOrders() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await client.auth.getSession();
         if (session?.user) {
-          const { data } = await supabase
+          const { data } = await client
             .from('orders')
             .select('*, order_items(*, products(*))')
             .eq('user_id', session.user.id)

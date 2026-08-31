@@ -11,7 +11,6 @@ import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle2 } from 'lucide-re
 
 export default function SignupPage() {
   const router = useRouter();
-  const supabase = createClient();
   const { showToast } = useToast();
 
   const [fullName, setFullName] = useState('');
@@ -33,6 +32,7 @@ export default function SignupPage() {
     }
 
     // Step 1: Create the auth user
+    const supabase = createClient();
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,

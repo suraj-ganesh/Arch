@@ -14,8 +14,13 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/account';
 
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any | null>(null);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    const client = createClient();
+    setSupabase(client);
+  }, []);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,6 +39,7 @@ function LoginContent() {
     }
 
     async function checkLoginSession() {
+      if (!supabase) return;
       const { data } = await supabase.auth.getSession();
       const session = data.session;
       if (session?.user) {
@@ -55,7 +61,14 @@ function LoginContent() {
     setLoading(true);
     setError('');
 
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
+    const client = supabase ?? (typeof window !== 'undefined' ? createClient() : null);
+    if (!client) {
+      setError('Unable to initialize authentication client');
+      setLoading(false);
+      return;
+    }
+
+    const { data, error: authError } = await client.auth.signInWithPassword({
       email,
       password,
     });

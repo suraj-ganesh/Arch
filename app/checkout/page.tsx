@@ -8,13 +8,14 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '../../lib/store/useCartStore';
 import { useToast } from '../../components/ToastProvider';
 import { createClient } from '../../lib/supabase/client';
+import { useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { ESEWA_CONFIG } from '../../lib/esewa';
 import { ShieldCheck, Lock, LogIn } from 'lucide-react';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any | null>(null);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userSession, setUserSession] = useState<Session | null>(null);
@@ -31,9 +32,11 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     setMounted(true);
+    const client = createClient();
+    setSupabase(client);
     // Check active Supabase Auth session
     async function checkCheckoutSession() {
-      const { data } = await supabase.auth.getSession();
+      const { data } = await client.auth.getSession();
       const session = data.session;
       setUserSession(session);
       if (session?.user) {

@@ -7,12 +7,17 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/components/ToastProvider';
 import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
 import { ArrowLeft, Save, Upload, Image as ImageIcon, X } from 'lucide-react';
 
 export default function NewProductPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any | null>(null);
+
+  useEffect(() => {
+    setSupabase(createClient());
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',
