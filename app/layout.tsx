@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { ToastProvider } from "@/components/ToastProvider";
+import ClientShell from '@/components/ClientShell';
 
 const jakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -31,11 +29,9 @@ export default function RootLayout({
         className="font-sans bg-[#f4f3ee] text-[#463f3a] antialiased min-h-screen flex flex-col justify-between selection:bg-[#839788] selection:text-white"
         suppressHydrationWarning
       >
-        <ToastProvider>
-          <Navbar />
+        <ClientShell>
           <main className="flex-1">{children}</main>
-          <Footer />
-        </ToastProvider>
+        </ClientShell>
       </body>
     </html>
   );
