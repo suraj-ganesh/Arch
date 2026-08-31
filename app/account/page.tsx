@@ -12,7 +12,7 @@ import { Package, Mail, Phone, MapPin, LogOut, LogIn, UserPlus } from 'lucide-re
 
 export default function AccountPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<any | null>(null);
   const { showToast } = useToast();
 
   const [user, setUser] = useState<User | null>(null);
@@ -22,9 +22,13 @@ export default function AccountPage() {
   useEffect(() => {
     let isMounted = true;
 
+    // Create the browser-only supabase client inside useEffect so it never runs during prerender.
+    const client = createClient();
+    setSupabase(client);
+
     // 1. Fetch initial session explicitly
     async function initSession() {
-      const { data } = await supabase.auth.getSession();
+      const { data } = await client.auth.getSession();
       if (isMounted) {
         setUser(data.session?.user ?? null);
         setReady(true);
@@ -34,7 +38,7 @@ export default function AccountPage() {
     initSession();
 
     // 2. Listen for auth state changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (!isMounted) return;
 
       if (session?.user) {
@@ -53,7 +57,8 @@ export default function AccountPage() {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const client = supabase ?? (typeof window !== 'undefined' ? createClient() : null);
+    if (client) await client.auth.signOut();
     setUser(null);
     showToast('Logged out successfully', 'info');
     router.push('/');
