@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Package, ShieldCheck, CheckCircle2, Truck, XCircle, Clock } from 'lucide-react';
