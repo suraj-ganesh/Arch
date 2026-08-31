@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '../../../lib/supabase/client';
-import { useState } from 'react';
 import { Package, Clock, CheckCircle2, Truck } from 'lucide-react';
 
 export default function AccountOrdersPage() {

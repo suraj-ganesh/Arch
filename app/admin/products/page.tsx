@@ -8,7 +8,7 @@ import { Product } from '@/lib/types';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { useToast } from '@/components/ToastProvider';
 import { createClient } from '@/lib/supabase/client';
-import { useState } from 'react';
+ 
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);

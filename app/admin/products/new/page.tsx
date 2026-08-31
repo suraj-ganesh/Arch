@@ -2,12 +2,12 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/components/ToastProvider';
 import { createClient } from '@/lib/supabase/client';
-import { useState } from 'react';
+ 
 import { ArrowLeft, Save, Upload, Image as ImageIcon, X } from 'lucide-react';
 
 export default function NewProductPage() {
