@@ -108,6 +108,7 @@ export default function CheckoutPage() {
       });
 
       const data = await response.json();
+      console.log('esewa initiate response:', data);
 
       if (!data.success || !data.esewaPayload) {
         throw new Error(data.error || 'Failed to initialize payment');
@@ -115,7 +116,8 @@ export default function CheckoutPage() {
 
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = ESEWA_CONFIG.initiateUrl;
+      // Use the initiate URL returned by the server for diagnostics and environment correctness
+      form.action = data.esewaInitiateUrl || ESEWA_CONFIG.initiateUrl;
 
       Object.entries(data.esewaPayload).forEach(([key, value]) => {
         const input = document.createElement('input');
@@ -126,6 +128,7 @@ export default function CheckoutPage() {
       });
 
       document.body.appendChild(form);
+      console.log('Submitting form to eSewa:', form.action, data.esewaPayload);
       form.submit();
     } catch (err: any) {
       console.error('Checkout error:', err);

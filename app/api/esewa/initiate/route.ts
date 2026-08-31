@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { prepareEsewaPayload } from '@/lib/esewa';
+import { prepareEsewaPayload, ESEWA_CONFIG } from '@/lib/esewa';
 
 export async function POST(request: Request) {
   try {
@@ -92,15 +92,18 @@ export async function POST(request: Request) {
       baseUrl
     });
 
-    // Log the callback URLs for debugging (visible in Vercel build logs)
+    // Log the callback URLs and request info for debugging (visible in Vercel build logs)
     console.log('eSewa success_url:', esewaPayload.success_url);
     console.log('eSewa failure_url:', esewaPayload.failure_url);
+    console.log('Initiate request host header:', request.headers.get('host'));
+    console.log('Order created:', { orderId, dbOrderId, totalAmount: grandTotal });
 
     return NextResponse.json({
       success: true,
       orderId,
       dbOrderId,
       totalAmount: grandTotal,
+      esewaInitiateUrl: ESEWA_CONFIG.initiateUrl,
       esewaPayload
     });
   } catch (err: any) {
