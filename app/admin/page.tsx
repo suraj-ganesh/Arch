@@ -14,15 +14,20 @@ import type { User } from '@supabase/supabase-js';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [supabase, setSupabase] = useState<any | null>(null);
   const [search, setSearch] = useState('');
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
+    // Create the browser-only supabase client inside useEffect so it never runs during prerender.
+    const client = createClient();
+    setSupabase(client);
+
     async function checkAdminSession() {
-      const { data } = await supabase.auth.getSession();
+      if (!client) return;
+      const { data } = await client.auth.getSession();
       if (data.session?.user) {
         setAdminUser(data.session.user);
       }
@@ -30,8 +35,9 @@ export default function AdminDashboardPage() {
     checkAdminSession();
 
     async function loadAdminData() {
+      if (!client) return;
       try {
-        const { data } = await supabase.from('products').select('*');
+        const { data } = await client.from('products').select('*');
         if (data && data.length > 0) {
           setProducts(data);
         }
@@ -53,8 +59,8 @@ export default function AdminDashboardPage() {
     } catch (e) {
       // Fallback: client-side signOut + manual redirect
       try {
-        const supabase = createClient();
-        await supabase.auth.signOut({ scope: 'global' });
+        const client = supabase ?? createClient();
+        await client.auth.signOut({ scope: 'global' });
         Object.keys(localStorage).forEach((key) => {
           if (key.startsWith('sb-') || key.includes('supabase')) {
             localStorage.removeItem(key);
