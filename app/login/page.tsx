@@ -16,12 +16,6 @@ function LoginContent() {
 
   const [supabase, setSupabase] = useState<any | null>(null);
   const { showToast } = useToast();
-
-  useEffect(() => {
-    const client = createClient();
-    setSupabase(client);
-  }, []);
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,32 +23,40 @@ function LoginContent() {
   const [sessionChecked, setSessionChecked] = useState(false);
   const isSignedOut = searchParams.get('signedout') === '1';
 
-  // On mount: check if a session already exists.
-  // SKIP if we just signed out (signedout=1) to prevent bounce-back.
+  // Initialize the browser-only Supabase client and check session when ready
   useEffect(() => {
+    let client = supabase;
+    if (!client && typeof window !== 'undefined') {
+      client = createClient();
+      setSupabase(client);
+    }
+
     if (isSignedOut) {
-      // Came here from logout — always show the form, clear any cached state
       setSessionChecked(true);
       return;
     }
 
-    async function checkLoginSession() {
-      if (!supabase) return;
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-      if (session?.user) {
-        const role = session.user.user_metadata?.role;
-        if (role === 'admin') {
-          router.push('/admin');
+    if (!client) return;
+
+    (async function checkLoginSession() {
+      try {
+        const { data } = await client.auth.getSession();
+        const session = data.session;
+        if (session?.user) {
+          const role = session.user.user_metadata?.role;
+          if (role === 'admin') {
+            router.push('/admin');
+          } else {
+            router.push(redirect);
+          }
         } else {
-          router.push(redirect);
+          setSessionChecked(true);
         }
-      } else {
+      } catch (err) {
         setSessionChecked(true);
       }
-    }
-    checkLoginSession();
-  }, []);
+    })();
+  }, [supabase, isSignedOut]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
